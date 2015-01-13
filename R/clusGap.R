@@ -12,12 +12,20 @@
 ##    - it uses  boot() nicely  [2012-01: ORPHANED because  Justin Harrington is amiss]
 ## MM: renamed arguments, and changed almost everything
 
-clusGap <- function (x, FUNcluster, K.max, B = 100, verbose = interactive(), ...)
+clusGap <- function (x, FUNcluster, K.max, B = 100, verbose = interactive(),
+    do_parallel = FALSE, ...)
 {
     stopifnot(is.function(FUNcluster), length(dim(x)) == 2, K.max >= 2,
               (n <- nrow(x)) >= 1, (p <- ncol(x)) >= 1)
     if(B != (B. <- as.integer(B)) || (B <- B.) <= 0)
         stop("'B' has to be a positive integer")
+
+    apply_fun <- lapply
+
+    if (do_parallel)
+    {
+        apply_fun <- parallel::mclapply
+    }
 
     if(is.data.frame(x))
         x <- as.matrix(x)
@@ -29,10 +37,13 @@ clusGap <- function (x, FUNcluster, K.max, B = 100, verbose = interactive(), ...
 			function(I) { xs <- X[I,, drop=FALSE]
 				      sum(dist(xs)/nrow(xs)) }, 0.))
     }
-    logW <- E.logW <- SE.sim <- numeric(K.max)
+
+    E.logW <- SE.sim <- numeric(K.max)
+
     if(verbose) cat("Clustering k = 1,2,..., K.max (= ",K.max,"): .. ", sep='')
-    for(k in 1:K.max)
-        logW[k] <- log(W.k(x, k))
+
+    logW <- unlist(apply_fun(1:K.max, function(k) log(W.k(x, k))))
+
     if(verbose) cat("done\n")
 
     ## Scale 'x' into "hypercube" -- we later fill with H0-generated data
@@ -42,20 +53,27 @@ clusGap <- function (x, FUNcluster, K.max, B = 100, verbose = interactive(), ...
     rng.x1 <- apply(xs %*% V.sx, # = transformed(x)
                     2, range)
 
-    logWks <- matrix(0., B, K.max)
     if(verbose) cat("Bootstrapping, b = 1,2,..., B (= ", B,
                     ")  [one \".\" per sample]:\n", sep="")
-    for (b in 1:B) {
-        ## Generate "H0"-data as "parametric bootstrap sample" :
-        z1 <- apply(rng.x1, 2,
-                    function(M, nn) runif(nn, min=M[1], max=M[2]),
-                    nn=n)
-        z <- tcrossprod(z1, V.sx) + m.x # back transformed
-        for(k in 1:K.max) {
-            logWks[b,k] <- log(W.k(z, k))
-        }
-        if(verbose) cat(".", if(b %% 50 == 0) paste(b,"\n"))
-    }
+
+    logWksList <- apply_fun(1:B,
+        function(b)
+        {
+            ## Generate "H0"-data as "parametric bootstrap sample" :
+            z1 <- apply(rng.x1, 2,
+                function(M, nn) runif(nn, min=M[1], max=M[2]),
+                nn=n)
+            z <- tcrossprod(z1, V.sx) + m.x # back transformed
+            curLogWks <- unlist(lapply(1:K.max, function(k) log(W.k(z, k))))
+            if(verbose && !do_parallel) cat(".", if(b %% 50 == 0) paste(b,"\n"))
+
+            curLogWks
+        })
+
+    logWks <- matrix(unlist(logWksList),
+        byrow = TRUE,
+        nrow = B)
+
     if(verbose && (B %% 50 != 0)) cat("",B,"\n")
     E.logW <- colMeans(logWks)
     SE.sim <- sqrt((1 + 1/B) * apply(logWks, 2, var))

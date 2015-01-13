@@ -20,8 +20,8 @@
   et al's recommendation of determining the number of clusters from the
   gap statistics and their standard deviations.
 }
-\usage{
-clusGap(x, FUNcluster, K.max, B = 100, verbose = interactive(), \dots)
+\usage{ clusGap(x, FUNcluster, K.max, B = 100, verbose = interactive(),
+    do_parallel = FALSE, \dots)
 
 maxSE(f, SE.f,
       method = c("firstSEmax", "Tibs2001SEmax", "globalSEmax",
@@ -44,6 +44,10 @@ maxSE(f, SE.f,
   \item{verbose}{integer or logical, determining if \dQuote{progress}
     output should be printed.  The default prints one bit per bootstrap
     sample.}
+  \item{do_parallel}{logical. If TRUE, then use \code{parallel::mclapply}. If
+      FALSE, then use \code{lapply}. To set the number of cores, set
+      \code{option(mc.cores = n_cores)}} where \code{n_cores is the number of
+      cores}.
   \item{\dots}{optionally further arguments for \code{FUNcluster()}, see
     \code{kmeans} example below.}
   \item{f}{numeric vector of \sQuote{function values}, of length
