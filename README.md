@@ -4,6 +4,8 @@ This package was imported from CRAN (version 1.15.3). I've modified the
 function `clusGap` to accept the argument `do_parallel` to perform the gap
 statistic uniform sampling in parallel using the `parallel` package.
 
+- Harold Pimentel <haroldpimentel@gmail.com>, January 12, 2015
+
 -------
 
 # ORIGINAL README :
