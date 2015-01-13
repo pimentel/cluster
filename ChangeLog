@@ -1,3 +1,9 @@
+2015-01-12	Harold Pimentel <haroldpimentel@gmail.com>
+
+	* DESCRIPTION: Suggets: parallel
+	* R/clusGap.R: method allows parallel computation using argument
+	"do_parallel".
+
 2014-03-26  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* DESCRIPTION (Version): 1.15.2
