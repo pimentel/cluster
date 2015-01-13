@@ -1,9 +1,18 @@
-ORIGINAL README :
+# 'cluster' package with some modifications
+
+This package was imported from CRAN (version 1.15.3). I've modified the
+function `clusGap` to accept the argument `do_parallel` to perform the gap
+statistic uniform sampling in parallel using the `parallel` package.
+
+-------
+
+# ORIGINAL README :
 
   This directory contains code, help and examples for CLUS, an S-PLUS
   package for clustering, as described in ``Clustering in an
   Object-Oriented Environment'' by Anja Struyf, Mia Hubert, and Peter
   J. Rousseeuw (Journal of Statistical Software, volume 1).
+
 ------------------------------------------------------------------------
 
 See http://www.stat.ucla.edu/journals/jss/ for the original version.
